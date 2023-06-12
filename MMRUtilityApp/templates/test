@@ -2,7 +2,7 @@ from django.db import models
 
 
 # Create your models here.
-class MMRmodel(models.Model):
+class MMRmodel(models.Model, default=''):
     # def __str__(self, default=''):
     #      return self.cms_contract_id
 
