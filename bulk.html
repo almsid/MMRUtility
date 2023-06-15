@@ -45,7 +45,7 @@
       var optionValue = document.getElementById('option-value');
       var addOptionBtn = document.getElementById('add-option');
       var selectedOptionsContainer = document.getElementById('selected-options-container');
-      var selectedOptions = {};
+      var options = {};  // Initialize options as an empty object
 
       addOptionBtn.addEventListener('click', addOption);
       optionValue.addEventListener('keydown', function (event) {
@@ -60,12 +60,12 @@
         var value = optionValue.value;
 
         if (selectedOption !== '' && value !== '') {
-          selectedOptions[selectedOption] = value;
+          options[selectedOption] = value;  // Store the option-value pair in the options object
 
           var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
           var optionDiv = document.createElement('div');
           optionDiv.className = 'mb-2';
-          optionDiv.setAttribute('data-option', selectedOption);
+          optionDiv.dataset.option = selectedOption;  // Add the selected option as a data attribute
 
           var optionTextSpan = document.createElement('span');
           optionTextSpan.textContent = selectedOptionText + ': ';
@@ -94,26 +94,16 @@
       }
 
       function deleteOption(option) {
-        delete selectedOptions[option];
+        delete options[option];  // Remove the option from the options object
+
         var optionDiv = selectedOptionsContainer.querySelector('[data-option="' + option + '"]');
         selectedOptionsContainer.removeChild(optionDiv);
-        var optionText = optionDiv.querySelector('span').textContent;
-        var optionValue = optionText.substring(0, optionText.indexOf(':'));
+
         var optionOption = document.createElement('option');
         optionOption.value = option;
-        optionOption.textContent = optionValue;
+        optionOption.textContent = option;
         optionSelect.appendChild(optionOption);
       }
-
-      document.getElementById('options-form').addEventListener('submit', function (event) {
-        event.preventDefault();
-        var optionsInput = document.createElement('input');
-        optionsInput.type = 'hidden';
-        optionsInput.name = 'options';
-        optionsInput.value = JSON.stringify(selectedOptions);
-        this.appendChild(optionsInput);
-        this.submit();
-      });
     });
   </script>
 </body>
