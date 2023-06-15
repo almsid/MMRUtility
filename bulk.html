@@ -45,6 +45,7 @@
       var optionValue = document.getElementById('option-value');
       var addOptionBtn = document.getElementById('add-option');
       var selectedOptionsContainer = document.getElementById('selected-options-container');
+      var selectedOptions = {};
 
       addOptionBtn.addEventListener('click', addOption);
       optionValue.addEventListener('keydown', function (event) {
@@ -59,46 +60,55 @@
         var value = optionValue.value;
 
         if (selectedOption !== '' && value !== '') {
-          var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
-          var optionDiv = document.createElement('div');
-          optionDiv.className = 'mb-2';
+          if (selectedOptions[selectedOption]) {
+            // Option already exists, update the value
+            var optionDiv = selectedOptions[selectedOption];
+            var optionValueSpan = optionDiv.querySelector('.option-value');
+            optionValueSpan.textContent = value;
+          } else {
+            // New option, create a new element
+            var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
+            var optionDiv = document.createElement('div');
+            optionDiv.className = 'mb-2';
 
-          var optionTextSpan = document.createElement('span');
-          optionTextSpan.textContent = selectedOptionText + ': ';
-          optionDiv.appendChild(optionTextSpan);
+            var optionTextSpan = document.createElement('span');
+            optionTextSpan.textContent = selectedOptionText + ': ';
+            optionDiv.appendChild(optionTextSpan);
 
-          var optionValueSpan = document.createElement('span');
-          optionValueSpan.textContent = value;
-          optionDiv.appendChild(optionValueSpan);
+            var optionValueSpan = document.createElement('span');
+            optionValueSpan.textContent = value;
+            optionValueSpan.classList.add('option-value');
+            optionDiv.appendChild(optionValueSpan);
 
-          var deleteButton = document.createElement('button');
-          deleteButton.type = 'button';
-          deleteButton.className = 'btn btn-sm btn-danger ms-2';
-          deleteButton.textContent = 'Delete';
-          deleteButton.addEventListener('click', function () {
-            selectedOptionsContainer.removeChild(optionDiv);
-            optionSelect.options[optionSelect.selectedIndex].disabled = false; // Enable the deleted option
-          });
-          optionDiv.appendChild(deleteButton);
+            var deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'btn btn-sm btn-danger ms-2';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function () {
+              deleteOption(selectedOption);
+            });
+            optionDiv.appendChild(deleteButton);
 
-          var editButton = document.createElement('button');
-          editButton.type = 'button';
-          editButton.className = 'btn btn-sm btn-primary ms-2';
-          editButton.textContent = 'Edit';
-          editButton.addEventListener('click', function () {
-            optionValue.value = value;
-            selectedOptionsContainer.removeChild(optionDiv);
-            optionSelect.options[optionSelect.selectedIndex].disabled = false; // Enable the edited option
-          });
-          optionDiv.appendChild(editButton);
+            selectedOptions[selectedOption] = optionDiv;
+            selectedOptionsContainer.appendChild(optionDiv);
+          }
 
-          selectedOptionsContainer.appendChild(optionDiv);
-
-          optionSelect.options[optionSelect.selectedIndex].disabled = true; // Disable the selected option
-
+          optionSelect.removeChild(optionSelect.querySelector('option[value="' + selectedOption + '"]')); // Remove the option from the dropdown
           optionSelect.value = '';
           optionValue.value = '';
         }
+      }
+
+      function deleteOption(option) {
+        var optionDiv = selectedOptions[option];
+        selectedOptionsContainer.removeChild(optionDiv);
+        var optionText = optionDiv.querySelector('span').textContent;
+        var optionValue = optionText.substring(0, optionText.indexOf(':'));
+        var optionOption = document.createElement('option');
+        optionOption.value = option;
+        optionOption.textContent = optionValue;
+        optionSelect.appendChild(optionOption);
+        delete selectedOptions[option];
       }
     });
   </script>
