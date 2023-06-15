@@ -62,60 +62,45 @@
         var value = optionValue.value;
 
         if (selectedOption !== '' && value !== '') {
-          if (options[selectedOption]) {
-            // Option already exists, update the value
-            var optionDiv = options[selectedOption];
-            var optionValueSpan = optionDiv.querySelector('.option-value');
-            optionValueSpan.textContent = value;
-          } else {
-            // New option, create a new element
-            var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
-            var optionDiv = document.createElement('div');
-            optionDiv.className = 'mb-2';
+          options[selectedOption] = value;
 
-            var optionTextSpan = document.createElement('span');
-            optionTextSpan.textContent = selectedOptionText + ': ';
-            optionDiv.appendChild(optionTextSpan);
+          var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
+          var optionDiv = document.createElement('div');
+          optionDiv.className = 'mb-2';
+          optionDiv.setAttribute('data-option', selectedOption);
 
-            var optionValueSpan = document.createElement('span');
-            optionValueSpan.textContent = value;
-            optionValueSpan.classList.add('option-value');
-            optionDiv.appendChild(optionValueSpan);
+          var optionTextSpan = document.createElement('span');
+          optionTextSpan.textContent = selectedOptionText + ': ';
+          optionDiv.appendChild(optionTextSpan);
 
-            var deleteButton = document.createElement('button');
-            deleteButton.type = 'button';
-            deleteButton.className = 'btn btn-sm btn-danger ms-2';
-            deleteButton.textContent = 'Delete';
-            deleteButton.addEventListener('click', function () {
-              deleteOption(selectedOption);
-            });
-            optionDiv.appendChild(deleteButton);
+          var optionValueSpan = document.createElement('span');
+          optionValueSpan.textContent = value;
+          optionValueSpan.classList.add('option-value');
+          optionDiv.appendChild(optionValueSpan);
 
-            options[selectedOption] = optionDiv;
-            selectedOptionsContainer.appendChild(optionDiv);
-          }
+          var deleteButton = document.createElement('button');
+          deleteButton.type = 'button';
+          deleteButton.className = 'btn btn-sm btn-danger ms-2';
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', function () {
+            deleteOption(selectedOption);
+          });
+          optionDiv.appendChild(deleteButton);
 
-          optionSelect.removeChild(optionSelect.querySelector('option[value="' + selectedOption + '"]')); // Remove the option from the dropdown
+          selectedOptionsContainer.appendChild(optionDiv);
+
           optionSelect.value = '';
           optionValue.value = '';
-
-          // Update the options input value with the updated options object
-          document.getElementById('options-input').value = JSON.stringify(options);
         }
+        
+        document.getElementById('options-input').value = JSON.stringify(options);
       }
 
       function deleteOption(option) {
-        var optionDiv = options[option];
-        selectedOptionsContainer.removeChild(optionDiv);
-        var optionText = optionDiv.querySelector('span').textContent;
-        var optionValue = optionText.substring(0, optionText.indexOf(':'));
-        var optionOption = document.createElement('option');
-        optionOption.value = option;
-        optionOption.textContent = optionValue;
-        optionSelect.appendChild(optionOption);
         delete options[option];
+        var optionDiv = selectedOptionsContainer.querySelector('div[data-option="' + option + '"]');
+        selectedOptionsContainer.removeChild(optionDiv);
 
-        // Update the options input value with the updated options object
         document.getElementById('options-input').value = JSON.stringify(options);
       }
     });
