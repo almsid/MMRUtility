@@ -39,79 +39,131 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var optionSelect = document.getElementById('option-select');
-      var optionValue = document.getElementById('option-value');
-      var addOptionBtn = document.getElementById('add-option');
-      var selectedOptionsContainer = document.getElementById('selected-options-container');
-      var selectedOptions = {};
+  <!DOCTYPE html>
+<html lang="en">
 
-      addOptionBtn.addEventListener('click', addOption);
-      optionValue.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          addOption();
-        }
-      });
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css">
+  <title>Select Options</title>
+</head>
 
-      function addOption() {
-        var selectedOption = optionSelect.value;
-        var value = optionValue.value;
+<body>
+  <div class="container mt-5">
+    <form action="{% url 'process_options' %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3 d-flex align-items-center">
+        <label for="file-upload" class="form-label me-3">Upload a file:</label>
+        <input type="file" id="file-upload" class="form-control" name="uploaded_file">
+      </div>
 
-        if (selectedOption !== '' && value !== '') {
-          if (selectedOptions[selectedOption]) {
-            // Option already exists, update the value
-            var optionDiv = selectedOptions[selectedOption];
-            var optionValueSpan = optionDiv.querySelector('.option-value');
-            optionValueSpan.textContent = value;
-          } else {
-            // New option, create a new element
-            var selectedOptionText = optionSelect.options[optionSelect.selectedIndex].text;
-            var optionDiv = document.createElement('div');
-            optionDiv.className = 'mb-2';
+      <div class="mb-3 d-flex align-items-center">
+        <label for="option-select" class="form-label me-3">Select an option:</label>
+        <select id="option-select" class="form-select me-3">
+          <option value="">-- Select --</option>
+          <option value="option1">Option 1</option>
+          <option value="option2">Option 2</option>
+          <option value="option3">Option 3</option>
+          <option value="option4">Option 4</option>
+        </select>
+        <input type="text" id="option-value" class="form-control me-3">
+        <button type="button" class="btn btn-primary" id="add-option">Add Option</button>
+      </div>
 
-            var optionTextSpan = document.createElement('span');
-            optionTextSpan.textContent = selectedOptionText + ': ';
-            optionDiv.appendChild(optionTextSpan);
+      <div id="selected-options-container" class="mb-3"></div>
 
-            var optionValueSpan = document.createElement('span');
-            optionValueSpan.textContent = value;
-            optionValueSpan.classList.add('option-value');
-            optionDiv.appendChild(optionValueSpan);
+      <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+  </div>
 
-            var deleteButton = document.createElement('button');
-            deleteButton.type = 'button';
-            deleteButton.className = 'btn btn-sm btn-danger ms-2';
-            deleteButton.textContent = 'Delete';
-            deleteButton.addEventListener('click', function () {
-              deleteOption(selectedOption);
-            });
-            optionDiv.appendChild(deleteButton);
+  <!-- Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+ <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var optionSelect = document.getElementById('option-select');
+    var optionValue = document.getElementById('option-value');
+    var addOptionBtn = document.getElementById('add-option');
+    var selectedOptionsContainer = document.getElementById('selected-options-container');
+    var selectedOptions = {};
 
-            selectedOptions[selectedOption] = optionDiv;
-            selectedOptionsContainer.appendChild(optionDiv);
-          }
-
-          optionSelect.removeChild(optionSelect.querySelector('option[value="' + selectedOption + '"]')); // Remove the option from the dropdown
-          optionSelect.value = '';
-          optionValue.value = '';
-        }
-      }
-
-      function deleteOption(option) {
-        var optionDiv = selectedOptions[option];
-        selectedOptionsContainer.removeChild(optionDiv);
-        var optionText = optionDiv.querySelector('span').textContent;
-        var optionValue = optionText.substring(0, optionText.indexOf(':'));
-        var optionOption = document.createElement('option');
-        optionOption.value = option;
-        optionOption.textContent = optionValue;
-        optionSelect.appendChild(optionOption);
-        delete selectedOptions[option];
+    addOptionBtn.addEventListener('click', addOption);
+    optionValue.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addOption();
       }
     });
-  </script>
+
+    function addOption() {
+      var selectedOption = optionSelect.value;
+      var value = optionValue.value;
+
+      if (selectedOption !== '' && value !== '') {
+        var originalOption = optionSelect.options[optionSelect.selectedIndex].text.trim();
+        if (selectedOptions[originalOption]) {
+          // Option already exists, update the value
+          selectedOptions[originalOption].value = value;
+          var optionDiv = selectedOptions[originalOption].element;
+          var optionValueSpan = optionDiv.querySelector('.option-value');
+          optionValueSpan.textContent = value;
+        } else {
+          // New option, create a new element
+          var optionDiv = document.createElement('div');
+          optionDiv.className = 'mb-2';
+
+          var optionTextSpan = document.createElement('span');
+          optionTextSpan.textContent = originalOption + ': ';
+          optionDiv.appendChild(optionTextSpan);
+
+          var optionValueSpan = document.createElement('span');
+          optionValueSpan.textContent = value;
+          optionValueSpan.classList.add('option-value');
+          optionDiv.appendChild(optionValueSpan);
+
+          var deleteButton = document.createElement('button');
+          deleteButton.type = 'button';
+          deleteButton.className = 'btn btn-sm btn-danger ms-2';
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', function() {
+            deleteOption(originalOption);
+          });
+          optionDiv.appendChild(deleteButton);
+
+          selectedOptions[originalOption] = {
+            value: value,
+            element: optionDiv
+          };
+          selectedOptionsContainer.appendChild(optionDiv);
+        }
+
+        optionSelect.removeChild(optionSelect.querySelector('option[value="' + selectedOption + '"]')); // Remove the option from the dropdown
+        optionSelect.value = '';
+        optionValue.value = '';
+      }
+    }
+
+    function deleteOption(option) {
+      var optionDiv = selectedOptions[option].element;
+      selectedOptionsContainer.removeChild(optionDiv);
+      delete selectedOptions[option];
+
+      var optionOption = document.createElement('option');
+      optionOption.value = option;
+      optionOption.textContent = option;
+      optionSelect.appendChild(optionOption);
+    }
+  });
+</script>
+
+
+
+
+</body>
+
+</html>
+
 </body>
 
 </html>
